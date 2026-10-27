@@ -180,32 +180,8 @@ All 8 words must be loaded before running. Memory has no reset, so unloaded word
 
 `acc` counts 3, 2, 1, 0. JZ is not taken twice and taken once; the CPU halts at cycle 10 with `acc = 0` and `pc` held at 4.
 
-## 8. Repository layout
 
-```
-.
-├── README.md
-├── Makefile                 lint, sim, synth targets
-├── .gitignore
-├── .github/workflows/ci.yml runs lint, sim and synth on each push
-├── rtl/
-│   ├── ops.vh               opcode and ALU-select macros
-│   ├── pmem.v               program memory
-│   ├── loader.v             program loader
-│   ├── dec.v                decode
-│   ├── alu.v                16-bit ALU
-│   ├── npc.v                zero detect and next PC
-│   ├── omux.v               output byte mux
-│   ├── toy_cpu16.v          top level
-│   └── files.f              source list
-├── tb/
-│   └── tb_toy_cpu16.v       testbench with reference model
-└── docs/
-    ├── TCPU16_Design_Documentation.md
-    └── TCPU16_Verification_Plan.md
-```
-
-## 9. Build and run
+## 8. Build and run
 
 Requires `iverilog`, `verilator` and `yosys`.
 
@@ -217,7 +193,7 @@ make         # all three
 make clean
 ```
 
-## 10. Verification
+## 9. Verification
 
 The testbench `tb/tb_toy_cpu16.v` has three parts:
 
@@ -227,7 +203,7 @@ The testbench `tb/tb_toy_cpu16.v` has three parts:
 
 The full plan is in `docs/TCPU16_Verification_Plan.md`. It lists every feature with sub-features, test names, scenarios, positive or negative type, cover points, configuration, cross-feature checks, 24 assertions and the functional coverage groups. Each test is marked Done, Rand (covered only by the random run) or Plan (not yet written).
 
-## 11. Results
+## 10. Results
 
 | Check | Result |
 |---|---|
@@ -237,7 +213,7 @@ The full plan is in `docs/TCPU16_Verification_Plan.md`. It lists every feature w
 
 The spec expects 88 flops. With default `synth -flatten` Yosys reports 91 because it duplicates `pc` as a memory read-address register; `-nordff` prevents that.
 
-## 12. Assumptions and limitations
+## 11. Assumptions and limitations
 
 - The spec's two clocking modes are not used. There are no input synchronizers, so the design behaves as the host-generated-clock mode and inputs must change only while `clk` is low.
 - The clock period, PVT corners, harness pin mapping and area allocation are not declared yet, so there is no timing analysis or physical flow in this repo.
@@ -245,7 +221,7 @@ The spec expects 88 flops. With default `synth -flatten` Yosys reports 91 becaus
 - Sub-module and signal names are shortened for readability. The top-level port names and `pc`, `acc`, `ir`, `halted` keep the spec names, as the spec requires.
 - Hardware limits: only 8 instruction words, constants of 0..31 per instruction, no program readback and no halted status pin.
 
-## 13. Next steps
+## 12. Next steps
 
 1. Write the assertions and functional coverage as SystemVerilog and add the remaining directed tests from the plan.
 2. Declare a clock period, corners and harness, then run the SKY130 flow (for example OpenLane or Tiny Tapeout) and record the timing results.
