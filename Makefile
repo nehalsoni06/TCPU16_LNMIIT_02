@@ -1,18 +1,46 @@
-SRC = rtl/pmem.v rtl/loader.v rtl/dec.v rtl/alu.v rtl/npc.v rtl/omux.v rtl/toy_cpu16.v
-TB  = tb/tb_toy_cpu16.v
 
-.PHONY: all sim lint synth clean
-all: lint sim synth
+IVERILOG  ?= iverilog
+VVP       ?= vvp
+VERILATOR ?= verilator
+YOSYS     ?= yosys
+GTKWave   ?= gtkwave
 
-sim:
-	iverilog -g2012 -Irtl -o sim.out $(SRC) $(TB)
-	vvp sim.out | grep -E "PASS|FAIL|MISM|DONE"
+RTL := rtl/pmem.v \
+       rtl/loader.v \
+       rtl/dec.v \
+       rtl/alu.v \
+       rtl/npc.v \
+       rtl/omux.v \
+       rtl/toy_cpu16.v
+
+BUILD := build
+SIM := $(BUILD)/tb_toy_cpu16
+WAVE := $(BUILD)/tcpu16_wave.vcd
+
+.PHONY: all sim wave view lint synth clean
+
+all: lint sim
+
+$(BUILD):
+	mkdir -p $(BUILD)
+
+sim: $(BUILD)
+	$(IVERILOG) -g2012 -Irtl -s tb_toy_cpu16 \
+	-o $(SIM) $(RTL) tb/tb_toy_cpu16.v
+	$(VVP) $(SIM)
+
+wave: sim
+	$(GTKWave) $(WAVE)
+
+view:
+	$(GTKWave) $(WAVE)
 
 lint:
-	verilator --lint-only -Wall -Irtl $(SRC) --top-module toy_cpu16
+	$(VERILATOR) --lint-only -Wall -Wno-fatal \
+	-Irtl --top-module toy_cpu16 $(RTL)
 
 synth:
-	yosys -p "read_verilog -Irtl $(SRC); synth -flatten -nordff -top toy_cpu16; stat" | sed -n '/Printing statistics/,$$p' | grep -E "cells|DFF"
+	$(YOSYS) -p 'read_verilog -Irtl $(RTL); hierarchy -top toy_cpu16; synth -top toy_cpu16 -flatten -noabc -nordff; stat'
 
 clean:
-	rm -f sim.out *.vcd
+	rm -rf $(BUILD) obj_dir
