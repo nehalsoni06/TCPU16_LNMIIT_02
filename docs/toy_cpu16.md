@@ -27,7 +27,8 @@ flowchart TD
     EXT --> OMUX
     OMUX --> OUT["acc_out (8-bit)"]
 ```
-<img width="914" height="348" alt="image" src="https://github.com/user-attachments/assets/5d9c9ea2-d24e-48fe-8e1b-3fee913d3f23" />
+<img width="914" height="322" alt="image" src="https://github.com/user-attachments/assets/f79aa2cf-1006-4b7a-886c-94d1c8f2e93f" />
+
 
 ## 3. Top-Level Interface
 
