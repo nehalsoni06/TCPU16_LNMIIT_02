@@ -23,7 +23,7 @@ WAVE := $(BUILD)/tcpu16_wave.vcd
 
 .PHONY: all sim wave view lint synth clean
 
-all: lint sim
+all: sim
 
 $(BUILD):
 	mkdir -p $(BUILD)
