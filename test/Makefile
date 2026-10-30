@@ -29,7 +29,7 @@ $(BUILD):
 	mkdir -p $(BUILD)
 
 sim: $(BUILD)
-	$(IVERILOG) -g2012 -Isrc -s tb \
+	$(IVERILOG) -g2012 -Isrc/src -s tb \
 	-o $(SIM) $(PROJECT_SOURCES) tb.v
 	$(VVP) $(SIM)
 
