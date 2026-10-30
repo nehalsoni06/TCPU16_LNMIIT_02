@@ -1,49 +1,54 @@
-# Tool configuration
-IVERILOG  ?= iverilog
-VVP       ?= vvp
-VERILATOR ?= verilator
-YOSYS     ?= yosys
-GTKWave   ?= gtkwave
 
-# Project source files
-PROJECT_SOURCES = ../src/project.v \
-                  ../src/toy_cpu16.v \
-                  ../src/alu.v \
-                  ../src/dec.v \
-                  ../src/loader.v \
-                  ../src/npc.v \
-                  ../src/omux.v \
-                  ../src/pmem.v
+# Makefile
+# See https://docs.cocotb.org/en/stable/quickstart.html for more info
 
-# Build configuration
-BUILD := build
-SIM := $(BUILD)/tb_toy_cpu16
-WAVE := $(BUILD)/tcpu16_wave.vcd
+# defaults
+SIM ?= icarus
+FST ?= -fst # Use more efficient FST format
+TOPLEVEL_LANG ?= verilog
+SRC_DIR = $(PWD)/../src
 
-.PHONY: all sim wave view lint synth clean
+PROJECT_SOURCES = project.v \
+                  toy_cpu16.v \
+                  alu.v \
+                  dec.v \
+                  loader.v \
+                  npc.v \
+                  omux.v \
+                  pmem.v
 
-all: sim
+ifneq ($(GATES),yes)
 
-$(BUILD):
-	mkdir -p $(BUILD)
+# RTL simulation:
+SIM_BUILD = sim_build/rtl
+VERILOG_SOURCES += $(addprefix $(SRC_DIR)/,$(PROJECT_SOURCES))
 
-sim: $(BUILD)
-	$(IVERILOG) -g2012 -I../src -s tb \
-	-o $(SIM) $(PROJECT_SOURCES) tb.v
-	$(VVP) $(SIM)
+else
 
-wave: sim
-	$(GTKWave) $(WAVE)
+# Gate level simulation:
+SIM_BUILD = sim_build/gl
+COMPILE_ARGS += -DGL_TEST
+COMPILE_ARGS += -DFUNCTIONAL
+COMPILE_ARGS += -DUSE_POWER_PINS
+COMPILE_ARGS += -DSIM
+COMPILE_ARGS += -DUNIT_DELAY=\#1
+VERILOG_SOURCES += $(PDK_ROOT)/sky130A/libs.ref/sky130_fd_sc_hd/verilog/primitives.v
+VERILOG_SOURCES += $(PDK_ROOT)/sky130A/libs.ref/sky130_fd_sc_hd/verilog/sky130_fd_sc_hd.v
 
-view:
-	$(GTKWave) $(WAVE)
+# this gets copied in by the GDS action workflow
+VERILOG_SOURCES += $(PWD)/gate_level_netlist.v
 
-lint:
-	$(VERILATOR) --lint-only -Wall -Wno-fatal \
-	-I../src --top-module tt_um_nehalsoni06_tcpu16 $(PROJECT_SOURCES)
+endif
 
-synth:
-	$(YOSYS) -p 'read_verilog -I../src $(PROJECT_SOURCES); hierarchy -top tt_um_nehalsoni06_tcpu16; synth -top tt_um_nehalsoni06_tcpu16 -flatten -noabc -nordff; stat'
+# Allow sharing configuration between design and testbench via `include`:
+COMPILE_ARGS += -I$(SRC_DIR)
 
-clean:
-	rm -rf $(BUILD) obj_dir
+# Include the testbench sources:
+VERILOG_SOURCES += $(PWD)/tb.v
+TOPLEVEL = tb
+
+# List test modules to run, separated by commas and without the .py suffix:
+COCOTB_TEST_MODULES = test
+
+# include cocotb's make rules to take care of the simulator setup
+include $(shell cocotb-config --makefiles)/Makefile.sim
