@@ -1,4 +1,3 @@
-
 # Tool configuration
 IVERILOG  ?= iverilog
 VVP       ?= vvp
@@ -29,7 +28,7 @@ $(BUILD):
 	mkdir -p $(BUILD)
 
 sim: $(BUILD)
-	$(IVERILOG) -g2012 -Isrc/src -s tb \
+	$(IVERILOG) -g2012 -I../src -s tb \
 	-o $(SIM) $(PROJECT_SOURCES) tb.v
 	$(VVP) $(SIM)
 
@@ -41,10 +40,10 @@ view:
 
 lint:
 	$(VERILATOR) --lint-only -Wall -Wno-fatal \
-	--top-module tt_um_nehalsoni06_tcpu16 $(PROJECT_SOURCES)
+	-I../src --top-module tt_um_nehalsoni06_tcpu16 $(PROJECT_SOURCES)
 
 synth:
-	$(YOSYS) -p 'read_verilog $(PROJECT_SOURCES); hierarchy -top tt_um_nehalsoni06_tcpu16; synth -top tt_um_nehalsoni06_tcpu16 -flatten -noabc -nordff; stat'
+	$(YOSYS) -p 'read_verilog -I../src $(PROJECT_SOURCES); hierarchy -top tt_um_nehalsoni06_tcpu16; synth -top tt_um_nehalsoni06_tcpu16 -flatten -noabc -nordff; stat'
 
 clean:
 	rm -rf $(BUILD) obj_dir
