@@ -1,22 +1,14 @@
+# TCPU-16 Testbench
 
-# Sample testbench for a Tiny Tapeout project
+This is the testbench for the TCPU-16 project submitted to Tiny Tapeout. It uses [Cocotb](https://docs.cocotb.org/en/stable/) to drive the DUT and verify its outputs.
 
-This is the testbench for the TCPU-16 Tiny Tapeout project. It uses [cocotb](https://docs.cocotb.org/en/stable/) to drive the DUT and check the outputs.
-See below to get started or for more information, check the [website](https://tinytapeout.com/hdl/testing/).
+TCPU-16 is a 16-bit educational CPU featuring an ALU, an 8-bit instruction memory, a program loader, and an accumulator.
 
 ## Setting up
 
-1. Edit [Makefile](Makefile) and modify `PROJECT_SOURCES` to point to your Verilog files:
-   - `../src/project.v`
-   - `../src/toy_cpu16.v`
-   - `../src/alu.v`
-   - `../src/dec.v`
-   - `../src/loader.v`
-   - `../src/npc.v`
-   - `../src/omux.v`
-   - `../src/pmem.v`
-
-2. Edit [tb.v](tb.v) and replace `tt_um_example` with `tt_um_nehalsoni06_tcpu16`.
+1. Edit [Makefile](Makefile) and modify `PROJECT_SOURCES` to include the TCPU-16 Verilog source files.
+2. Edit [tb.v](tb.v) and ensure that the instantiated module name is `tt_um_nehalsoni06_tcpu16`.
+3. Edit [test.py](test.py) to implement the Cocotb test cases for the CPU.
 
 ## How to run
 
@@ -26,7 +18,7 @@ To run the RTL simulation:
 make -B
 ```
 
-To run gatelevel simulation, first harden your project and copy `../runs/wokwi/results/final/verilog/gl/tt_um_nehalsoni06_tcpu16.v` to `gate_level_netlist.v`.
+To run gate-level simulation, first harden your project and copy the generated gate-level netlist to `gate_level_netlist.v`.
 
 Then run:
 
@@ -34,7 +26,9 @@ Then run:
 make -B GATES=yes
 ```
 
-If you wish to save the waveform in VCD format instead of FST format, edit tb.v to use `$dumpfile("tb.vcd");` and then run:
+The gate-level simulation uses the GF180MCU PDK libraries configured in the Makefile.
+
+If you wish to save the waveform in VCD format instead of FST format, edit `tb.v` to use `$dumpfile("tb.vcd");` and then run:
 
 ```sh
 make -B FST=
@@ -44,14 +38,18 @@ This will generate `tb.vcd` instead of `tb.fst`.
 
 ## How to view the waveform file
 
-Using GTKWave
+Using GTKWave:
 
 ```sh
-gtkwave tb.fst tb.gtkw
+gtkwave tb.fst
 ```
 
-Using Surfer
+Using Surfer:
 
 ```sh
 surfer tb.fst
 ```
+
+## Testbench details
+
+The Cocotb testbench drives the clock, reset, and input signals of the TCPU-16 wrapper. Test cases can be added to verify instruction loading, CPU execution, accumulator updates, and other processor operations.
